@@ -50,20 +50,21 @@ func (ds *testDistsyncer) GetFile(fp string) (io.Writer, error) {
 // Check the correct implementation
 var _ Distsyncer = &testDistsyncer{}
 
-func DistsyncTest(t *testing.T) {
+func TestDistsync(t *testing.T) {
 	ds := &testDistsyncer{}
 	Distsync(ds)
 	expectPush := []string{
 		"a/b/c/file1",
 		"a/b/newer",
 	}
-	if reflect.DeepEqual(ds.pushFiles, expectPush) {
-		t.Fatal("Push files not correct")
+	if reflect.DeepEqual(ds.pushFiles, expectPush) != true {
+		t.Fatalf("Push files:\nExpect: %#v\nGot:%#v\n", expectPush, ds.pushFiles)
 	}
 	expectGet := []string{
 		"a/b/c/older",
 	}
-	if reflect.DeepEqual(ds.getFiles, expectGet) {
-		t.Fatal("Get files not correct")
+	if reflect.DeepEqual(ds.getFiles, expectGet) != true {
+
+		t.Fatalf("Get files:\nExpect: %#v\nGot:%#v\n", expectGet, ds.getFiles)
 	}
 }

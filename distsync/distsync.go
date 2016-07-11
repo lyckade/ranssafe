@@ -27,5 +27,49 @@ type Distsyncer interface {
 // Distsync uses the Distsyncer interface to sync between different
 // locations.
 func Distsync(ds Distsyncer) error {
+	distFileInfos := ds.GetDistFileInfo()
+	for _, fi := range ds.GetSrcFileInfo() {
+		switch {
+		case isPushFile(&fi, &distFileInfos):
+			ds.PushFile(fi.FilePath)
+		case isGetFile(&fi, &distFileInfos):
+			_, err := ds.GetFile(fi.FilePath)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	return nil
+}
+
+func isPushFile(fi *fileinfo.File, fInfos *[]fileinfo.File) bool {
+	df, ok := getDistFile(fi, fInfos)
+	if ok == false {
+		return true
+	}
+	if fi.Timestamp > df.Timestamp {
+		return true
+	}
+	return false
+
+}
+
+func isGetFile(fi *fileinfo.File, fInfos *[]fileinfo.File) bool {
+	df, ok := getDistFile(fi, fInfos)
+	if ok == false {
+		return false
+	}
+	if fi.Timestamp < df.Timestamp {
+		return true
+	}
+	return false
+}
+
+func getDistFile(fi *fileinfo.File, fInfos *[]fileinfo.File) (*fileinfo.File, bool) {
+	for _, f := range *fInfos {
+		if fi.FilePath == f.FilePath {
+			return &f, true
+		}
+	}
+	return nil, false
 }
