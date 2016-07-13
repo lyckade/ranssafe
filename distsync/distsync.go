@@ -18,7 +18,7 @@ import (
 // is going to be loaded from the dist path.
 type Distsyncer interface {
 	GetSrcFileInfo() []fileinfo.File
-	GetDistFileInfo() []fileinfo.File
+	GetDistFileInfo() ([]fileinfo.File, error)
 	//SkipFile(string) bool
 	PushFile(string) error
 	GetFile(string) (io.Writer, error)
@@ -27,7 +27,10 @@ type Distsyncer interface {
 // Distsync uses the Distsyncer interface to sync between different
 // locations.
 func Distsync(ds Distsyncer) error {
-	distFileInfos := ds.GetDistFileInfo()
+	distFileInfos, err := ds.GetDistFileInfo()
+	if err != nil {
+		return err
+	}
 	for _, fi := range ds.GetSrcFileInfo() {
 		switch {
 		case isPushFile(&fi, &distFileInfos):

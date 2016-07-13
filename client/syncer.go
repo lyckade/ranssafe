@@ -2,6 +2,9 @@ package main
 
 import (
 	"io"
+	"io/ioutil"
+	"log"
+	"net/http"
 
 	"github.com/as27/ranssafe/fileinfo"
 )
@@ -12,8 +15,8 @@ import (
 // Syncer is a implementation of the Distsyncer interface
 type Syncer struct {
 	// ServerAdress is the http adess of the server including
-	// the port
-	// http://localhost:1234
+	// the port and the package
+	// https://localhost:1234/mypackage
 	ServerURL   string
 	files       []fileinfo.File
 	newFileinfo func(string) (fileinfo.File, error)
@@ -44,6 +47,16 @@ func (s *Syncer) GetSrcFileInfo() []fileinfo.File {
 
 // GetDistFileInfo implements the distsync interface
 func (s *Syncer) GetDistFileInfo() []fileinfo.File {
+	res, err := http.Get(s.ServerURL + "/fileinfo")
+	if err != nil {
+		log.Fatal(err)
+	}
+	rbody, err := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("%v", string(rbody))
 	return nil
 }
 

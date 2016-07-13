@@ -23,14 +23,14 @@ func (ds *testDistsyncer) GetSrcFileInfo() []fileinfo.File {
 	return testFiles
 }
 
-func (ds *testDistsyncer) GetDistFileInfo() []fileinfo.File {
+func (ds *testDistsyncer) GetDistFileInfo() ([]fileinfo.File, error) {
 	testFiles := []fileinfo.File{
 		{"a/b/c/file2", 2016010131000000},
 		{"a/b/c/sametimestamp", 2016010131000000},
 		{"a/b/newer", 2015010131000000},
 		{"a/b/c/older", 2016010131000000},
 	}
-	return testFiles
+	return testFiles, nil
 }
 
 /*func (ds *testDistsyncer) SkipFile(fp string) bool {
