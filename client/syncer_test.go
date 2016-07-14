@@ -3,14 +3,16 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
 
+	"../distsync"
 	"github.com/as27/ranssafe/fileinfo"
 )
+
+var _ distsync.Distsyncer = newSyncer("")
 
 func TestGetSrcInfo(t *testing.T) {
 	s := NewSyncer("myServer")
@@ -52,15 +54,22 @@ func TestGetDistFileInfo(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		urlStr = r.URL.String()
 		b, _ := json.Marshal(fi)
-		fmt.Fprintln(w, b)
-		//fmt.Fprintf(w, "Wrong URL!\nExpectes:%v\nGot:%v", expect, r.URL)
+		w.Write(b)
 	}))
 	defer ts.Close()
 	s := NewSyncer(ts.URL + "/package")
-	s.GetDistFileInfo()
+	respFi, err := s.GetDistFileInfo()
+	if err != nil {
+		t.Fatalf("No error expected!\nGot: %s", err)
+	}
+	// Check requested URL
 	expect := "/package/fileinfo"
 	if urlStr != expect {
 		t.Fatalf("Wrong URL!\nExpectes:%v\nGot:%v", expect, urlStr)
+	}
+	// Check response
+	if reflect.DeepEqual(fi, respFi) != true {
+		t.Fatal("Response is different then definition at the server.")
 	}
 
 }

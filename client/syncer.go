@@ -1,9 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/as27/ranssafe/fileinfo"
@@ -46,18 +46,22 @@ func (s *Syncer) GetSrcFileInfo() []fileinfo.File {
 }
 
 // GetDistFileInfo implements the distsync interface
-func (s *Syncer) GetDistFileInfo() []fileinfo.File {
+func (s *Syncer) GetDistFileInfo() ([]fileinfo.File, error) {
 	res, err := http.Get(s.ServerURL + "/fileinfo")
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	rbody, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	log.Printf("%v", string(rbody))
-	return nil
+	var fi []fileinfo.File
+	err = json.Unmarshal(rbody, &fi)
+	if err != nil {
+		return nil, err
+	}
+	return fi, nil
 }
 
 // PushFile implements the distsync interface
