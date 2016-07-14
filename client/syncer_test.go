@@ -8,11 +8,11 @@ import (
 	"reflect"
 	"testing"
 
-	"../distsync"
+	"github.com/as27/ranssafe/distsync"
 	"github.com/as27/ranssafe/fileinfo"
 )
 
-var _ distsync.Distsyncer = newSyncer("")
+var _ distsync.Distsyncer = NewSyncer("")
 
 func TestGetSrcInfo(t *testing.T) {
 	s := NewSyncer("myServer")
@@ -72,4 +72,14 @@ func TestGetDistFileInfo(t *testing.T) {
 		t.Fatal("Response is different then definition at the server.")
 	}
 
+}
+
+func TestPushFile(t *testing.T) {
+	var urlStr string
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		urlStr = r.URL.String()
+		//b, _ := json.Marshal(fi)
+		//w.Write(b)
+	}))
+	defer ts.Close()
 }
